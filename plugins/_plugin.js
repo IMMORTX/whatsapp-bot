@@ -28,6 +28,10 @@ Asena.addCommand(
       )
     }
     const isValidUrl = parseGistUrls(match)
+    if (!isValidUrl) {
+      const { url } = await getPlugin(match)
+      if (url) return await message.sendMessage(url, { quoted: message.data })
+    }
     if (!isValidUrl) return await message.sendMessage(Lang.INVALID_URL)
     for (const url of isValidUrl) {
       try {
@@ -60,6 +64,10 @@ Asena.addCommand(
   { pattern: "remove (.*)", fromMe: true, desc: Lang.REMOVE_DESC },
   async (message, match) => {
     if (!match) return await message.sendMessage(Lang.NEED_PLUGIN)
+    if (match == "all") {
+      await deletePlugin()
+      return await message.sendMessage("_All plugins deleted Successfully_\n*Restart BOT*")
+    }
     const isDeleted = await deletePlugin(match)
     if (!isDeleted) return await message.sendMessage(Lang.NOT_FOUND_PLUGIN)
     delete require.cache[require.resolve("./" + match + ".js")]

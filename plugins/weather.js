@@ -99,22 +99,23 @@ Asena.addCommand(
       )
     if (/^[0-9]+/.test(match)) {
       await message.sendMessage(Lang.DOWNLOADING)
-      let url = await dlY2mate(match)
+      const url = await dlY2mate(match)
       if (!url) return await message.sendMessage("*Failed*")
-      let { buffer, size, emessage } = await getBuffer(url)
+      const { buffer, size, emessage } = await getBuffer(url)
       if (emessage)
         return message.sendMessage(`${emessage}\n${url}`, {
           quoted: message.data,
         })
-      if (!buffer) return await message.sendMessage(Lang.SIZE.format(size))
+      if (!buffer)
+        return await message.sendMessage(Lang.SIZE.format(size) + `\n${url}`)
       return await message.sendMessage(
         buffer,
-        { mimetype: Mimetype.mp4 },
+        { mimetype: Mimetype.mp4, quoted: message.quoted },
         MessageType.video
       )
     }
     let msg = await getY2mate(match)
-    if (!msg) return await message.sendMessage("*Failed*")
+    if (!msg) return await message.sendMessage("*Not Found*")
     return await message.sendMessage(msg, {}, MessageType.listMessage)
   }
 )
@@ -138,14 +139,14 @@ Asena.addCommand(
     let url = await y2mateMp3(vid[1])
     if (!url) return await message.sendMessage(Lang.INOT_FOUND)
     let { buffer, mime, emessage } = await getBuffer(url)
-    if (emessage)
+    if (!buffer || emessage)
       return message.sendMessage(`${emessage}\n${url}`, {
         quoted: message.data,
       })
     if (buffer)
       return await message.sendMessage(
         buffer,
-        { mimetype: mime },
+        { mimetype: mime, quoted: message.quoted },
         MessageType.audio
       )
   }
@@ -156,8 +157,9 @@ Asena.addCommand(
     if (!message.reply_message.image)
       return await message.sendMessage(Lang.INEED_REPLY)
     let msg = ""
-    let location = await message.reply_message.downloadMediaMessage()
-    let result = await googleSearch(location)
+    const result = await googleSearch(
+      await message.reply_message.downloadAndSaveMediaMessage()
+    )
     if (result.length == 0) return await message.sendMessage(Lang.INOT_FOUND)
     result.forEach((url) => {
       msg += `${url}\n`

@@ -13,6 +13,8 @@ const {
   deleteTicTacToe,
   isGameActive,
   genButtons,
+  fontType,
+  textToStylist,
 } = require("../Utilis/Misc")
 const Language = require("../language")
 const { forwardOrBroadCast } = require("../Utilis/groupmute")
@@ -63,7 +65,7 @@ Asena.addCommand(
       return await message.sendMessage(Lang.REPLY)
     return await message.sendMessage(
       await banner(
-        await message.reply_message.downloadMediaMessage(),
+        await message.reply_message.downloadAndSaveMediaMessage(),
         "wasted"
       ),
       {},
@@ -84,7 +86,7 @@ Asena.addCommand(
       return await message.sendMessage(Lang.REPLY)
     return await message.sendMessage(
       await banner(
-        await message.reply_message.downloadMediaMessage(),
+        await message.reply_message.downloadAndSaveMediaMessage(),
         "passed"
       ),
       {},
@@ -104,7 +106,10 @@ Asena.addCommand(
     if (!message.reply_message || !message.reply_message.image)
       return await message.sendMessage(Lang.REPLY)
     return await message.sendMessage(
-      await banner(await message.reply_message.downloadMediaMessage(), "jail"),
+      await banner(
+        await message.reply_message.downloadAndSaveMediaMessage(),
+        "jail"
+      ),
       {},
       MessageType.image
     )
@@ -123,7 +128,7 @@ Asena.addCommand(
       return await message.sendMessage(Lang.REPLY)
     return await message.sendMessage(
       await banner(
-        await message.reply_message.downloadMediaMessage(),
+        await message.reply_message.downloadAndSaveMediaMessage(),
         "triggered"
       ),
       { mimetype: Mimetype.webp },
@@ -139,9 +144,8 @@ Asena.addCommand(
     desc: Lang.READMORE_DESC,
   },
   async (message, match) => {
-    await message.sendMessage(
-      readMore(!message.reply_message ? match : message.reply_message.text)
-    )
+    if (match || message.reply_message.text)
+      await message.sendMessage(readMore(match || message.reply_message.text))
   }
 )
 
@@ -162,7 +166,7 @@ Asena.addCommand(
       Lang.BROADCASTING.format(broadcast),
       MessageType.text
     )
-    for (let jid of parsedJid(broadcast)) {
+    for (const jid of parsedJid(broadcast)) {
       await forwardOrBroadCast(jid, message)
     }
   }
@@ -259,7 +263,15 @@ Asena.addCommand(
     desc: "Creates fancy text from given text",
   },
   async (message, match) => {
-    return await message.sendMessage("```" + stylishTextGen(match) + "```")
+    if (message.reply_message.text) {
+      if (!match || isNaN(match) || match < 1 || match > 38)
+        return await message.sendMessage("Chooose font\n Ex: fancy 7")
+      return await message.sendMessage(
+        textToStylist(message.reply_message.text, fontType(match))
+      )
+    }
+    if (match)
+      return await message.sendMessage("```" + stylishTextGen(match) + "```")
   }
 )
 /*

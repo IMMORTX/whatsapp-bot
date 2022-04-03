@@ -1,7 +1,7 @@
 const Asena = require("../Utilis/events")
 const { MessageType } = require("@adiwajshing/baileys")
 const { getJson, TiktokDownloader, getBuffer } = require("../Utilis/download")
-const { UploadToImgur, wallpaper, parsedJid } = require("../Utilis/Misc")
+const { UploadToImgur, parsedJid, getOneWallpaper } = require("../Utilis/Misc")
 const Language = require("../language")
 const Lang = Language.getString("tiktok")
 const { forwardOrBroadCast } = require("../Utilis/groupmute")
@@ -9,18 +9,22 @@ const { forwardOrBroadCast } = require("../Utilis/groupmute")
 Asena.addCommand(
   { pattern: "tiktok ?(.*)", fromMe: true, desc: Lang.TIKTOK_DESC },
   async (message, match) => {
-    match = !message.reply_message ? match : message.reply_message.text
+    match = match || message.reply_message.text
     if (match == "")
       return await message.sendMessage(Lang.NEED_REPLY, {
         quoted: message.data,
       })
-    let link = await TiktokDownloader(match)
+    const link = await TiktokDownloader(match)
     if (!link)
       return await message.sendMessage(Lang.INVALID, {
         quoted: message.data,
       })
-    let { buffer } = await getBuffer(link)
-    return await message.sendMessage(buffer, {}, MessageType.video)
+    const { buffer } = await getBuffer(link)
+    return await message.sendMessage(
+      buffer,
+      { quoted: message.quoted },
+      MessageType.video
+    )
   }
 )
 
@@ -77,12 +81,12 @@ Asena.addCommand(
   },
   async (message, match) => {
     if (match == "") return message.sendMessage(Lang.NEED_NAME)
-    let buffer = await wallpaper(match)
+    const buffer = await getOneWallpaper(match, message)
     if (!buffer) return await message.sendMessage(Lang.NOT_FOUND)
     return await message.sendMessage(
       buffer,
       { quoted: message.data },
-      MessageType.image
+      MessageType.buttonsMessage
     )
   }
 )
@@ -95,12 +99,13 @@ Asena.addCommand(
       (!message.reply_message.image && !message.reply_message.video)
     )
       return await message.sendMessage(Lang.URL_NEED_REPLY)
-    if (message.reply_message.length > 10)
-      return await message.sendMessage("*Only accept below 10 MB*")
-    let location = await message.reply_message.downloadAndSaveMediaMessage(
-      "url"
+    if (message.reply_message.video && message.reply_message.seconds > 60)
+      return await message.sendMessage("*Only accept below 1min*")
+    return await message.sendMessage(
+      await UploadToImgur(
+        await message.reply_message.downloadAndSaveMediaMessage("url")
+      ),
+      { quoted: message.data }
     )
-    let url = await UploadToImgur(location)
-    return await message.sendMessage(url, { quoted: message.data })
   }
 )

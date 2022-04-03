@@ -21,6 +21,7 @@ const {
   clearGreetings,
   mentionMessage,
   enableMention,
+  clearFiles,
 } = require("../Utilis/Misc")
 const { MessageType } = require("@adiwajshing/baileys")
 const { getMessage, deleteMessage } = require("../Utilis/warn")
@@ -168,6 +169,7 @@ Asena.addCommand(
       urls.forEach((url, i) => {
         list += `${i + 1}. ${url}\n`
       })
+      await message.sendMessage(urls.join(","))
       return await message.sendMessage(s + list + s)
     } else if (match == "on" || match == "off") {
       await enableAntilink(message.jid, match)
@@ -212,6 +214,7 @@ Asena.addCommand(
       codes.forEach((code, i) => {
         list += `${i + 1}. ${code}\n`
       })
+      await message.sendMessage(codes.join(","))
       return await message.sendMessage(s + list + s)
     } else if (match == "on" || match == "off") {
       await enableAntiFake(message.jid, match)
@@ -256,6 +259,7 @@ Asena.addCommand(
       words.forEach((word, i) => {
         list += `${i + 1}. ${word}\n`
       })
+      await message.sendMessage(words.join(","))
       return await message.sendMessage(s + list + s)
     } else if (match == "on" || match == "off") {
       await enableAntiBad(message.jid, match)
@@ -299,6 +303,7 @@ Asena.addCommand(
       )
     }
     await enableMention(match)
+    clearFiles()
     return await message.sendMessage(Lang.A_UPDATED.format("Mention"))
   }
 )

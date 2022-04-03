@@ -17,6 +17,7 @@ const {
   SpeachToText,
   generateListMessage,
   newsListMessage,
+  addAudioMetaData,
 } = require("../Utilis/Misc")
 //=====================================================================================
 //============================== YOUTUBE ==============================================
@@ -83,7 +84,7 @@ Asena.addCommand(
 Asena.addCommand(
   { pattern: "song ?(.*)", fromMe: true, desc: Lang.SONG_DESC },
   async (message, match) => {
-    match = !message.reply_message ? match : message.reply_message.text
+    match = match || message.reply_message.text
     if (match === "")
       return await message.sendMessage(Lang.NEED_TEXT_SONG, {
         quoted: message.data,
@@ -117,8 +118,9 @@ Asena.addCommand(
         return await message.sendMessage(
           "*Downloading failed*\n```Restart BOT```"
         )
+      const { title, image, author, description } = (await yts(match)).all[0]
       return await message.sendMessage(
-        buffer,
+        await addAudioMetaData(buffer, title, author.name, description, image),
         {
           mimetype: Mimetype.mp4Audio,
           quoted: message.data,
@@ -137,7 +139,7 @@ Asena.addCommand(
 Asena.addCommand(
   { pattern: "video ?(.*)", fromMe: fm, desc: Lang.VIDEO_DESC },
   async (message, match) => {
-    match = !message.reply_message ? match : message.reply_message.text
+    match = match || message.reply_message.text
     let vid = ytid.exec(match)
     if (match === "" || !vid) return await message.sendMessage(Lang.NEED_VIDEO)
     try {

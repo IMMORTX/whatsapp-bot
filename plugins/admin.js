@@ -8,7 +8,7 @@ WhatsAsena - Yusuf Usta
 
 const Asena = require("../Utilis/events")
 const Language = require("../language")
-const { checkImAdmin } = require("../Utilis/Misc")
+const { checkImAdmin, promoteDemote, genButtons } = require("../Utilis/Misc")
 const { MessageType } = require("@adiwajshing/baileys")
 const { getName } = require("../Utilis/download")
 const Lang = Language.getString("admin")
@@ -275,11 +275,13 @@ Asena.addCommand(
     desc: Lang.JOIN_DESC,
   },
   async (message, match) => {
-    match = !message.reply_message ? match : message.reply_message.text
-    if (match == "") return await message.sendMessage(Lang.JOIN_ERR)
-    let wa = /chat.whatsapp.com\/([0-9A-Za-z]{20,24})/
-    let [_, code] = message.message.match(wa) || []
+    match = match || message.reply_message.text
+    if (!match) return await message.sendMessage(Lang.JOIN_ERR)
+    const wa = /chat.whatsapp.com\/([0-9A-Za-z]{20,24})/
+    const [_, code] = match.match(wa) || []
     if (!code) return await message.sendMessage(Lang.JOIN_ERR)
+    const { size } = await message.inviteCodeInfo(code)
+    if (size > 256) return await message.sendMessage("*Group is full!*")
     await message.client.acceptInvite(code)
     return await message.sendMessage(Lang.JOINED)
   }
@@ -298,5 +300,32 @@ Asena.addCommand(
     if (!im) return await message.sendMessage(Lang.IM_NOT_ADMIN)
     await message.client.revokeInvite(message.jid)
     return await message.sendMessage(Lang.REVOKE)
+  }
+)
+
+Asena.addCommand(
+  {
+    pattern: "pdm ?(.*)",
+    fromMe: true,
+    onlyGroup: true,
+    desc: "disable or enabled Group promote demote info",
+  },
+  async (message, match) => {
+    if (!match)
+      return await message.sendMessage(
+        genButtons(["ON", "OFF"], "Enable Promote and Demote Message"),
+        {},
+        MessageType.buttonsMessage
+      )
+    if (match == "on" || match == "off") {
+      await promoteDemote(message.jid, match == "on")
+      await message.sendMessage(
+        "```" +
+          `Promoted Demoted Message ${
+            match == "on" ? "Enabled" : "Disabled"
+          }✅` +
+          "```"
+      )
+    }
   }
 )
