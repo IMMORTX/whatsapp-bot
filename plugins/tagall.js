@@ -20,6 +20,7 @@ const {
 const { getName } = require("../Utilis/download")
 const Lang = Language.getString("tagall")
 const s = "```"
+const z = "🥰"
 // const config = require('../config');
 Asena.addCommand(
   {
@@ -35,11 +36,11 @@ Asena.addCommand(
       let mesaj = ""
       mentionedJid.forEach(
         (e, i) =>
-          (mesaj += `${i + 1}${"🥰"}${addSpace(🥰,i + 1, participants.length)} @${
+          (mesaj += `${i + 1}${addSpace(i + 1, participants.length)} @${
             e.split("@")[0]
           }\n`)
       )
-      return await message.sendMessage(s + mesa + s + 🥰, {
+      return await message.sendMessage(s + z + mesaj + s +, {
         contextInfo: { mentionedJid },
       })
     } else if (match == "admin" || match == "admins") {
