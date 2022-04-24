@@ -39,7 +39,7 @@ Asena.addCommand(
             e.split("@")[0]
           }\n`)
       )
-      return await message.sendMessage(s + mesaj + s, {
+      return await message.sendMessage(s + mesaj + s + 🥰, {
         contextInfo: { mentionedJid },
       })
     } else if (match == "admin" || match == "admins") {
